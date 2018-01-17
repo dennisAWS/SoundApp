@@ -129,23 +129,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
-        if response.actionIdentifier == UNNotificationDismissActionIdentifier {
-            // The user dismissed the notification without taking action
-        }
-        else if response.actionIdentifier == UNNotificationDefaultActionIdentifier {
-            // The user launched the app from the notification
+        
+        let actionIdentifier = response.actionIdentifier
+        
+        switch actionIdentifier {
+        case UNNotificationDismissActionIdentifier: // Notification was dismissed by user
+            // Go do something
+            completionHandler()
+        case UNNotificationDefaultActionIdentifier: // App was opened from notification center
+            // Go do something
+            completionHandler()
+        default:
+            completionHandler()
         }
         
-        // Else handle any custom actions. . .
-        if response.notification.request.content.categoryIdentifier == "TIMER_EXPIRED" {
-            // Handle the actions for the expired timer.
-            if response.actionIdentifier == "SNOOZE_ACTION" {
-                // Invalidate the old timer and create a new one. . .
-            }
-            else if response.actionIdentifier == "STOP_ACTION" {
-                // Invalidate the timer. . .
-            }
-        }
+        // Provides you with a list of the app’s notifications that are still displayed in Notification Center.
+        //let delivery = UNUserNotificationCenter.getDeliveredNotifications(center)
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
