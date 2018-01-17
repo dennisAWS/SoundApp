@@ -5,7 +5,6 @@
 //  Created by Hills, Dennis on 1/15/18.
 //  Copyright © 2018 Hills, Dennis. All rights reserved.
 //
-
 import UIKit
 import UserNotifications
 import AudioToolbox
@@ -20,13 +19,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Check if the app was launched from a remote push notification, otherwise do nothing
         // Note: This is the entry point for all remote push notifications if the app is not running in the foreground
         if let notification = launchOptions?[.remoteNotification] as? [String: AnyObject] {
-            guard let userInfo = notification["userInfo"] as! Dictionary<AnyHashable,Any>? else {
+            guard let userInfo = notification["userInfo"] as? Dictionary<AnyHashable, Any>? else {
                 return false
             }
-            print("Received push notification while app was backgrounded: \(userInfo)")
+            print("Received push notification while app was backgrounded: \(userInfo as Optional)")
 
             // Send notification to the push notification handler
-            pushNotificationHandler(userInfo: userInfo)
+            pushNotificationHandler(userInfo: userInfo!)
         }
       
         // Register for push notifications everytime the app launches
@@ -44,28 +43,33 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
             // Send notification to the push handler
             pushNotificationHandler(userInfo: userInfo)
-        }
-        else
+        } else
         {
             print("User selected the alert from notification center while app was backgrounded \(userInfo)")
         }
     }
     
     // Push Notification handler for all app states
-    func pushNotificationHandler(userInfo: Dictionary<AnyHashable,Any>) {
+    func pushNotificationHandler(userInfo: Dictionary<AnyHashable, Any>) {
         // Parse any data key/value pairs in userInfo
-        let dataPayload = userInfo as! [String: AnyObject]
+        
+        guard let dataPayload = userInfo as? [String: AnyObject] else {
+            return
+        }
+        
         if let myKeyVal = dataPayload["myKey"] as? String {
             print("myKey value is: \(myKeyVal)")
         }
         
         // Parse the aps payload
-        let apsPayload = userInfo["aps"] as! [String: AnyObject]
+        guard let apsPayload = userInfo["aps"] as? [String: AnyObject] else {
+            return
+        }
         print("Entered pushNotificationReceiver() with payload: \(apsPayload)")
     
         // Play custom push notification sound (if exists) by parsing out the "sound" key and playing the audio file specified
         // For example, if the incoming payload is: { "sound":"tarzanwut.aiff" } the app will look for the tarzanwut.aiff file in the app bundle and play it
-        if let mySoundFile : String = apsPayload["sound"] as? String {
+        if let mySoundFile: String = apsPayload["sound"] as? String {
             print("sound filename: \(mySoundFile)")
             playSound(fileName: mySoundFile)
         }
@@ -125,7 +129,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         print("Failed to register for push notifications: \(error)")
     }
     
-    //From https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG////SchedulingandHandlingLocalNotifications.html#//apple_ref/doc/uid/TP40008194-CH5-SW2
     func userNotificationCenter(_ center: UNUserNotificationCenter,
                                 didReceive response: UNNotificationResponse,
                                 withCompletionHandler completionHandler: @escaping () -> Void) {
@@ -148,12 +151,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
-        // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-        // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
+        // About to move from active to inactive state. (incoming phone call or SMS message) or when the user quits the application and it
+        //begins the transition to the background state. Pause ongoint tasks, timers, pause game.
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
-        // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
         // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     }
 
@@ -169,9 +171,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
-        // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+        // Called when the application is about to terminate. Save data if appropriate.
+        //See also applicationDidEnterBackground:.
     }
-
-
 }
-
